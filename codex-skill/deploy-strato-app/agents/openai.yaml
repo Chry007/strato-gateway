@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deploy STRATO App"
+  short_description: "Deploy one isolated app through the STRATO gateway"
+  default_prompt: "Use $deploy-strato-app to scaffold or deploy this non-Mobikit Docker application at its isolated /apps/<slug>/ path."

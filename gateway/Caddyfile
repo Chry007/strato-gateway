@@ -1,0 +1,24 @@
+{
+	admin 127.0.0.1:2019
+	auto_https off
+}
+
+:8080 {
+	route {
+		header +X-Strato-App-Gateway "strato-app-gateway"
+
+		handle /_gateway/health {
+			respond "ok\n" 200
+		}
+
+		import /etc/caddy/routes/*.caddy
+
+		handle /apps/* {
+			respond "not found\n" 404
+		}
+
+		handle {
+			respond "not found\n" 404
+		}
+	}
+}
