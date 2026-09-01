@@ -83,7 +83,7 @@ done
 published="$("${DOCKER_BIN}" port "${container_id}")"
 [[ -z "${published}" ]] || die "Gateway unexpectedly publishes a host port."
 
-mapfile -t networks < <("${DOCKER_BIN}" inspect --format '{{range $name, $_ := .NetworkSettings.Networks}}{{println $name}}{{end}}' "${container_id}" | sort)
+mapfile -t networks < <("${DOCKER_BIN}" inspect --format '{{range $name, $_ := .NetworkSettings.Networks}}{{println $name}}{{end}}' "${container_id}" | sed '/^$/d' | sort)
 [[ "${#networks[@]}" == "2" ]] || die "Gateway must join exactly two networks."
 [[ "${networks[0]}" == "${APP_NETWORK}" && "${networks[1]}" == "${FRONT_NETWORK}" ]] || die "Gateway network membership is incorrect."
 

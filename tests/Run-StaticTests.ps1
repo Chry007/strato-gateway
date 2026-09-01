@@ -114,6 +114,7 @@ Assert-Contains $routeText 'use_inherited_or_acquire_global_lock' 'Route changes
 Assert-Contains $commonText 'GATEWAY_PROJECT="strato-app-gateway"' 'Compose identity must be fixed.'
 Assert-Contains $verifyText 'Gateway unexpectedly publishes a host port' 'Verification must fail on host ports.'
 Assert-Contains $verifyText 'Gateway must join exactly two networks' 'Verification must enforce exact networks.'
+Assert-Contains $verifyText "sed '/\^\$/d' \| sort" 'Network verification must discard Docker format trailing blank lines.'
 Assert-Contains $commonText 'gateway_http_response' 'Gateway probes must retain headers for non-2xx responses.'
 Assert-Contains $commonText 'timeout 12 nc' 'Gateway probes need a hard response deadline.'
 Assert-Contains $commonText 'head -c 16384' 'Gateway probes must bound response buffering.'
