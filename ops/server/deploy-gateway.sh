@@ -150,7 +150,6 @@ chmod 0444 "${release_dir}/RELEASE.json" "${release_dir}/RELEASE_IMAGE_ID" "${re
 
 compose_for_release "${release_dir}" config --quiet
 "${DOCKER_BIN}" run --rm --network none --read-only --cap-drop ALL --cap-add NET_BIND_SERVICE \
-  --security-opt no-new-privileges \
   --mount "type=bind,src=${release_dir}/Caddyfile,dst=/etc/caddy/Caddyfile,readonly" \
   --mount "type=bind,src=${GATEWAY_ROUTES},dst=/etc/caddy/routes,readonly" \
   "${CADDY_IMAGE}" caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile >/dev/null

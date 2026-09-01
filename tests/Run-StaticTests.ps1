@@ -89,6 +89,8 @@ $service = $compose.services.gateway
 Assert-True ($service.image -match '^docker\.io/library/caddy:2\.10\.2-alpine@sha256:[0-9a-f]{64}$') 'Caddy image must be immutable.'
 Assert-True ('ports' -notin @($service.PSObject.Properties.Name)) 'Gateway must publish no host ports.'
 Assert-True (@($service.expose) -contains '8080') 'Gateway must expose only internal port 8080.'
+Assert-NotContains $composeText '(?m)^\s*-\s*no-new-privileges' 'Snap Docker must be able to execute the official file-capability Caddy binary.'
+Assert-NotContains $allServerText '--security-opt\s+no-new-privileges' 'Server validators must stay compatible with Snap Docker Caddy execution.'
 Assert-True ((@($service.networks.PSObject.Properties.Name | Sort-Object) -join ',') -eq 'strato-app-edge,strato-ingress') 'Gateway network membership must be exact.'
 Assert-True ($compose.networks.'strato-ingress'.external -eq $true) 'strato-ingress must be external.'
 Assert-True ($compose.networks.'strato-app-edge'.external -eq $true) 'strato-app-edge must be external.'

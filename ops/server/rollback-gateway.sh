@@ -32,7 +32,6 @@ observed_config_sha="$( (sha256sum "${target_dir}/Caddyfile" "${target_dir}/comp
 
 compose_for_release "${target_dir}" config --quiet
 "${DOCKER_BIN}" run --rm --network none --read-only --cap-drop ALL --cap-add NET_BIND_SERVICE \
-  --security-opt no-new-privileges \
   --mount "type=bind,src=${target_dir}/Caddyfile,dst=/etc/caddy/Caddyfile,readonly" \
   --mount "type=bind,src=${GATEWAY_ROUTES},dst=/etc/caddy/routes,readonly" \
   "${target_image}" caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile >/dev/null
@@ -63,7 +62,6 @@ observed_config_sha="$( (sha256sum "${target_dir}/Caddyfile" "${target_dir}/comp
 [[ "${observed_config_sha}" == "${expected_config_sha}" ]] || die "Target release configuration identity changed."
 compose_for_release "${target_dir}" config --quiet
 "${DOCKER_BIN}" run --rm --network none --read-only --cap-drop ALL --cap-add NET_BIND_SERVICE \
-  --security-opt no-new-privileges \
   --mount "type=bind,src=${target_dir}/Caddyfile,dst=/etc/caddy/Caddyfile,readonly" \
   --mount "type=bind,src=${GATEWAY_ROUTES},dst=/etc/caddy/routes,readonly" \
   "${target_image}" caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile >/dev/null

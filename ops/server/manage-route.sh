@@ -145,7 +145,6 @@ fi
 
 # Validate the complete candidate configuration before touching the stable route directory.
 "${DOCKER_BIN}" run --rm --network none --read-only --cap-drop ALL --cap-add NET_BIND_SERVICE \
-  --security-opt no-new-privileges \
   --mount "type=bind,src=${current_dir}/Caddyfile,dst=/etc/caddy/Caddyfile,readonly" \
   --mount "type=bind,src=${candidate_routes},dst=/etc/caddy/routes,readonly" \
   "${image_ref}" caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile >/dev/null
@@ -181,7 +180,6 @@ recover() {
     note "Route verification failed; restoring the previous allocation for ${slug}."
     restore_previous_pair || restore_status=$?
     "${DOCKER_BIN}" run --rm --network none --read-only --cap-drop ALL --cap-add NET_BIND_SERVICE \
-      --security-opt no-new-privileges \
       --mount "type=bind,src=${current_dir}/Caddyfile,dst=/etc/caddy/Caddyfile,readonly" \
       --mount "type=bind,src=${GATEWAY_ROUTES},dst=/etc/caddy/routes,readonly" \
       "${image_ref}" caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile >/dev/null || restore_status=$?
