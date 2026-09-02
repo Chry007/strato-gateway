@@ -36,6 +36,9 @@ require_runtime() {
   command -v flock >/dev/null 2>&1 || die "flock is required."
   command -v realpath >/dev/null 2>&1 || die "realpath is required."
   command -v sha256sum >/dev/null 2>&1 || die "sha256sum is required."
+  command -v timeout >/dev/null 2>&1 || die "timeout is required."
+  command -v head >/dev/null 2>&1 || die "head is required."
+  command -v awk >/dev/null 2>&1 || die "awk is required."
 }
 
 validate_release_id() {
@@ -80,10 +83,18 @@ gateway_http_response() {
   local request_path="$2"
   [[ "${request_path}" == /* && "${request_path}" != *$'\r'* && "${request_path}" != *$'\n'* && "${request_path}" != *' '* ]] \
     || die "Gateway probe path is invalid."
-  "${DOCKER_BIN}" exec "${container_id}" sh -c \
-    'printf "GET %s HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n" "$1" | timeout 12 nc -w 10 127.0.0.1 "$2" | head -c 16384 | awk "$3"' \
-    gateway-probe "${request_path}" "${GATEWAY_PORT}" \
-    '{ print } /^\r?$/ { complete=1; exit } END { if (!complete) exit 2 }'
+  (
+    set +e
+    printf 'GET %s HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' "${request_path}" \
+      | timeout 12 "${DOCKER_BIN}" exec -i "${container_id}" nc -w 10 127.0.0.1 "${GATEWAY_PORT}" \
+      | head -c 16384 \
+      | awk '{ if (!complete) print } /^\r?$/ { complete=1 } END { if (!complete) exit 2 }'
+    probe_status=("${PIPESTATUS[@]}")
+    # head intentionally closes a response beyond the inspection cap, so the
+    # Docker client may receive SIGPIPE after complete headers were captured.
+    (( probe_status[1] == 0 || probe_status[1] == 141 )) || exit "${probe_status[1]}"
+    (( probe_status[3] == 0 )) || exit "${probe_status[3]}"
+  )
 }
 
 ensure_bootstrap_root() {

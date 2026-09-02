@@ -71,6 +71,8 @@ compose_for_release "${release_dir}" config --quiet
 
 container_id="$(gateway_container_id)"
 [[ "$("${DOCKER_BIN}" inspect --format '{{.State.Running}}' "${container_id}")" == "true" ]] || die "Gateway container is not running."
+[[ "$("${DOCKER_BIN}" inspect --format '{{.HostConfig.Init}}' "${container_id}")" == "true" ]] \
+  || die "Gateway container must run with an init process."
 
 for _ in $(seq 1 30); do
   health="$("${DOCKER_BIN}" inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}missing{{end}}' "${container_id}")"
