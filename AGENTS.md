@@ -23,6 +23,7 @@ Until that bridge exists, this gateway publishes no host ports and `/apps/*` is 
 - A route change validates the complete candidate Caddy configuration before activation, installs files with atomic renames, reloads only `strato-app-gateway`, verifies behavior, and restores the previous pair on failure.
 - The gateway joins both shared external networks, listens only on container port 8080, and has no host port binding.
 - Apps may join `strato-app-edge` only through their unique web alias. They never join `strato-ingress`, publish public host ports, use another app's Compose project, or share another app's private network.
+- For the authorized central AI integration, a web service with its explicit `com.strato.ai.client` label may additionally join `strato-ai-internal` without aliases. That internal network belongs to the independent `strato-ai-service` project; the app skill only verifies its identity and never creates or mutates it.
 - Secrets and persistent data remain server-side outside release directories. Never print secret values or inspect environment contents.
 - Never use Docker pruning, broad recursive deletion, recursive synchronization against a server root, or `docker compose down -v`.
 - Production verification uses server-side HTTP probes, never a browser.

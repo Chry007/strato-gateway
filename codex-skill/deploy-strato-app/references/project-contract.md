@@ -47,4 +47,12 @@ Use service `web`, release image `strato-<slug>-web:${STRATO_RELEASE:?}`, and th
 
 Other services may use only Compose-project private networks. Bind persistent files only from `${STRATO_APP_ROOT}/data` and secret files only from `${STRATO_APP_ROOT}/secrets`; create their required server-side contents separately. Do not set `container_name` or use named volumes. The server validates the rendered Compose model before starting it.
 
+The web service may additionally join the fixed external network `strato-ai-internal`
+when it declares `com.strato.ai.client: <slug>` as a service label. It may not set
+aliases on that network. The validator requires the existing network to be internal
+and carry `com.strato.ai.owner=strato-ai`; it never creates or modifies that network.
+The independent central AI service provisions a separate credential for each client.
+Keep the client's credential in its own server-side secrets directory. This exception
+does not grant access to another application's private network or to `strato-ingress`.
+
 The generic health check is an HTTP request from the gateway container. In `strip` mode the app serves `healthPath`; in `preserve` mode it serves `/apps/<slug><healthPath>`.
