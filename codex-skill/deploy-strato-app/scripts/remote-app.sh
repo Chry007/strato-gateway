@@ -216,6 +216,7 @@ web = services.get("web")
 if not isinstance(web, dict):
     raise SystemExit("Compose must define service web")
 edge = "strato-app-edge"
+ai = "strato-ai-internal"
 ingress = "strato-ingress"
 alias = f"strato-{slug}-web"
 for service_name, service in services.items():
@@ -232,6 +233,11 @@ for service_name, service in services.items():
         raise SystemExit(f"{service_name} joins strato-ingress")
     if edge in memberships and service_name != "web":
         raise SystemExit(f"only web may join strato-app-edge")
+    if ai in memberships:
+        if service_name != "web" or (service.get("labels") or {}).get("com.strato.ai.client") != slug:
+            raise SystemExit("central AI access requires the web service's explicit client label")
+        if memberships[ai] and memberships[ai].get("aliases"):
+            raise SystemExit("AI clients cannot declare shared service aliases")
     for mount in service.get("volumes") or []:
         if not isinstance(mount, dict):
             continue
@@ -264,12 +270,20 @@ for key, network in networks.items():
     if key == edge:
         continue
     network = network or {}
+    if key == ai:
+        if network.get("name") != ai or not network.get("external"):
+            raise SystemExit("central AI must use its fixed external internal network")
+        continue
     if network.get("external"):
         raise SystemExit("other external networks are forbidden")
     name = network.get("name") or ""
     if not name.startswith(f"strato-{slug}_"):
         raise SystemExit("private networks must belong to this Compose project")
 PY
+  if python3 -c 'import json,sys; sys.exit(0 if "strato-ai-internal" in json.load(open(sys.argv[1])).get("networks",{}) else 1)' "${config_path}"; then
+    [[ "$("${DOCKER_BIN}" network inspect --format '{{.Internal}}/{{index .Labels "com.strato.ai.owner"}}' strato-ai-internal)" == true/strato-ai ]] \
+      || die "Central AI network is missing or does not have the required internal ownership."
+  fi
   rm -f -- "${config_path}"
 }
 

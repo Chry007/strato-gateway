@@ -244,3 +244,4 @@ Assert-Contains $cutoverHandoff 'future migration' 'Public edge cutover must be 
 Assert-Contains (Read-RepoFile 'AGENTS.md') 'publishes no host ports' 'Project authority must preserve the transitional port boundary.'
 
 Write-Output "Static tests passed: $script:Passed assertions; skipped groups: $script:Skipped."
+Invoke-ExpectSuccess python @((Join-Path $root 'tests/test-ai-network.py')) | Write-Output
