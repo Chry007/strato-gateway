@@ -151,8 +151,11 @@ function Invoke-StratoRemoteHelper {
         throw "Missing skill helper: $helperPath"
     }
     $helper = [System.IO.File]::ReadAllText($helperPath)
+    # Buffer the complete script before executing it. PowerShell appends CRLF to
+    # piped strings; child docker exec processes must never consume script stdin.
+    $runner = 'python3 -c ''import sys,subprocess; sys.exit(subprocess.run(["bash","-c",sys.stdin.read().replace("\r",""),"strato-app",*sys.argv[1:]],stdin=subprocess.DEVNULL).returncode)'''
     $sshArguments = @($script:SshOptions) + @(
-        $script:StratoHost, 'bash', '-s', '--', $Action
+        $script:StratoHost, $runner, $Action
     ) + $Arguments
     $helper | & ssh @sshArguments
     if ($LASTEXITCODE -ne 0) {
